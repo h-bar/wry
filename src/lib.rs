@@ -350,7 +350,12 @@ mod error;
 mod inject_initialization_scripts;
 mod permissions;
 mod proxy;
-#[cfg(any(target_os = "macos", target_os = "android", target_os = "ios"))]
+#[cfg(any(
+  target_os = "macos",
+  target_os = "android",
+  target_os = "ios",
+  target_env = "ohos"
+))]
 mod util;
 mod web_context;
 
@@ -399,6 +404,11 @@ use self::webview2::*;
 use webview2_com::Microsoft::Web::WebView2::Win32::{
   ICoreWebView2, ICoreWebView2Controller, ICoreWebView2Environment,
 };
+
+#[cfg(target_env = "ohos")]
+pub(crate) mod ohos;
+#[cfg(target_env = "ohos")]
+pub use ohos::*;
 
 use std::{borrow::Cow, collections::HashMap, path::PathBuf, rc::Rc};
 
@@ -469,12 +479,15 @@ pub enum NewWindowResponse {
   /// **macOS**: The webview must use the same configuration as the caller webview. See [`WebViewBuilderExtMacos::with_webview_configuration`].
   #[cfg(not(any(target_os = "android", target_os = "ios")))]
   Create {
-    #[cfg(any(
-      target_os = "linux",
-      target_os = "dragonfly",
-      target_os = "freebsd",
-      target_os = "netbsd",
-      target_os = "openbsd",
+    #[cfg(all(
+      any(
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd"
+      ),
+      not(target_env = "ohos")
     ))]
     webview: webkit2gtk::WebView,
     #[cfg(windows)]
@@ -492,12 +505,15 @@ pub struct NewWindowOpener {
   /// The instance of the webview that initiated the new window request.
   ///
   /// This must be set as the related view of the new webview. See [`WebViewBuilderExtUnix::with_related_view`].
-  #[cfg(any(
-    target_os = "linux",
-    target_os = "dragonfly",
-    target_os = "freebsd",
-    target_os = "netbsd",
-    target_os = "openbsd",
+  #[cfg(all(
+    any(
+      target_os = "linux",
+      target_os = "dragonfly",
+      target_os = "freebsd",
+      target_os = "netbsd",
+      target_os = "openbsd"
+    ),
+    not(target_env = "ohos")
   ))]
   pub webview: webkit2gtk::WebView,
   /// The instance of the webview that initiated the new window request.
@@ -1078,12 +1094,15 @@ impl<'a> WebViewBuilder<'a> {
   where
     F: Fn(WebViewId, Request<Vec<u8>>) -> Response<Cow<'static, [u8]>> + Send + Sync + 'static,
   {
-    #[cfg(any(
-      target_os = "linux",
-      target_os = "dragonfly",
-      target_os = "freebsd",
-      target_os = "netbsd",
-      target_os = "openbsd",
+    #[cfg(all(
+      any(
+        target_os = "linux",
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "netbsd",
+        target_os = "openbsd",
+      ),
+      not(target_env = "ohos")
     ))]
     if let Some(context) = &mut self.attrs.context {
       if context.is_custom_protocol_registered(&name) {
@@ -2043,12 +2062,25 @@ impl WebViewBuilderExtAndroid for WebViewBuilder<'_> {
   }
 }
 
-#[cfg(any(
-  target_os = "linux",
-  target_os = "dragonfly",
-  target_os = "freebsd",
-  target_os = "netbsd",
-  target_os = "openbsd",
+#[cfg(target_env = "ohos")]
+#[derive(Default)]
+pub struct PlatformSpecificWebViewAttributes {}
+
+#[cfg(target_env = "ohos")]
+pub trait WebViewBuilderExtOhos {}
+
+#[cfg(target_env = "ohos")]
+impl WebViewBuilderExtOhos for WebViewBuilder<'_> {}
+
+#[cfg(all(
+  any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd",
+  ),
+  not(target_env = "ohos")
 ))]
 #[derive(Default)]
 pub(crate) struct PlatformSpecificWebViewAttributes {
@@ -2056,12 +2088,15 @@ pub(crate) struct PlatformSpecificWebViewAttributes {
   related_view: Option<webkit2gtk::WebView>,
 }
 
-#[cfg(any(
-  target_os = "linux",
-  target_os = "dragonfly",
-  target_os = "freebsd",
-  target_os = "netbsd",
-  target_os = "openbsd",
+#[cfg(all(
+  any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd",
+  ),
+  not(target_env = "ohos")
 ))]
 pub trait WebViewBuilderExtUnix<'a> {
   /// Consume the builder and create the webview inside a GTK container widget, such as GTK window.
@@ -2086,12 +2121,15 @@ pub trait WebViewBuilderExtUnix<'a> {
   fn with_related_view(self, webview: webkit2gtk::WebView) -> Self;
 }
 
-#[cfg(any(
-  target_os = "linux",
-  target_os = "dragonfly",
-  target_os = "freebsd",
-  target_os = "netbsd",
-  target_os = "openbsd",
+#[cfg(all(
+  any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd",
+  ),
+  not(target_env = "ohos")
 ))]
 impl<'a> WebViewBuilderExtUnix<'a> for WebViewBuilder<'a> {
   fn build_gtk<W>(self, widget: &'a W) -> Result<WebView>

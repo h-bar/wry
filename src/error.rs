@@ -82,4 +82,8 @@ pub enum Error {
   #[cfg(target_os = "android")]
   #[error("Invalid custom protocol host: {0}")]
   InvalidCustomProtocolHost(String),
+  #[error("Failed to initialize OpenHarmony webview: {0}")]
+  OpenHarmonyInitError(String),
+  #[error("Failed to execute: {0}")]
+  OpenHarmonyWebviewError(String),
 }

@@ -47,7 +47,7 @@ raw-window-handle = { version = "0.6", features = ["std"] }
 dpi = "0.1"
 cookie = "0.18"
 
-[target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"openbsd\", target_os = \"netbsd\"))".dependencies]
+[target.'cfg(all(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "openbsd", target_os = "netbsd"), not(target_env = "ohos")))'.dependencies]
 javascriptcore-rs = { version = "2", features = ["v2_28"], optional = true }
 webkit2gtk = { version = "3", features = ["v2_38"], optional = true }
 webkit2gtk-sys = { version = "3", optional = true }
@@ -204,6 +204,11 @@ objc2-foundation = { version = "0.3.2", default-features = false, features = [
   "std",
   "NSProcessInfo",
 ] }
+
+[target.'cfg(target_env = "ohos")'.dependencies]
+openharmony-ability = { git = "https://github.com/harmony-contrib/openharmony-ability.git", rev = "295a276a699ba2352addc69b8cacb6acd3be6ab1", features = ["webview"] }
+openharmony-ability-derive = { git = "https://github.com/harmony-contrib/openharmony-ability.git", rev = "295a276a699ba2352addc69b8cacb6acd3be6ab1" }
+
 
 [dev-dependencies]
 pollster = "1.0.0"
